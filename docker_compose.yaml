@@ -1,0 +1,30 @@
+name: personaldrive
+services:
+  app:
+    image: docker.io/personaldrive/personaldrive:latest
+    container_name: personaldrive
+    hostname: ${BASE_HOST_NAME:-personaldrive}
+    restart: always
+    pull_policy: always
+    environment:
+      - DISABLE_HTTPS: false
+      - APP_TIMEZONE: ${TZ:-America/New_York}
+      - APP_URL: https://${BASE_HOST_NAME:-personaldrive}
+    ports:
+      - '127.0.0.1:60839:80'
+    volumes:
+      - '/var/lib/srv/$USER/docker/personaldrive/personaldrive/latest/rootfs/data/db/personaldrive:/var/www/html/personal-drive/database/db:z'
+      - '/var/lib/srv/$USER/docker/personaldrive/personaldrive/latest/rootfs/data/personaldrive:/var/www/html/personal-drive-storage-folder:z'
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/80' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    networks:
+      - personaldrive
+
+networks:
+  personaldrive:
+    name: personaldrive
+    external: false
