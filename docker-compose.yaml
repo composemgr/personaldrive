@@ -1,0 +1,40 @@
+# nginx proxy address - http://172.17.0.1:60839
+
+name: personaldrive
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: docker.io/personaldrive/personaldrive:latest
+    container_name: personaldrive-app
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      DISABLE_HTTPS: false
+      APP_TIMEZONE: ${TZ:-America/New_York}
+      APP_URL: https://${BASE_HOST_NAME:-$HOSTNAME}
+    ports:
+      - '172.17.0.1:60839:80'
+    volumes:
+      - './rootfs/config/personaldrive:/var/www/html/personal-drive/database/db:z'
+      - './rootfs/data/personaldrive:/var/www/html/personal-drive-storage-folder:z'
+    healthcheck:
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/80' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    networks:
+      - personaldrive
+
+networks:
+  personaldrive:
+    name: personaldrive
+    external: false
