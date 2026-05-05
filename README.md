@@ -46,8 +46,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/config/personaldrive` - Data storage
-- `./rootfs/data/personaldrive` - Data storage
+- `./volumes/config/personaldrive` - Data storage
+- `./volumes/data/personaldrive` - Data storage
 
 ## 🔍 Logging
 
