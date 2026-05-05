@@ -23,8 +23,8 @@ services:
     ports:
       - '172.17.0.1:60839:80'
     volumes:
-      - './rootfs/config/personaldrive:/var/www/html/personal-drive/database/db:z'
-      - './rootfs/data/personaldrive:/var/www/html/personal-drive-storage-folder:z'
+      - './volumes/config/personaldrive:/var/www/html/personal-drive/database/db:z'
+      - './volumes/data/personaldrive:/var/www/html/personal-drive-storage-folder:z'
     healthcheck:
       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/80' || exit 1
       interval: 10s
