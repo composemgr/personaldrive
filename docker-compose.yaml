@@ -20,6 +20,8 @@ services:
       DISABLE_HTTPS: false
       APP_TIMEZONE: ${TZ:-America/New_York}
       APP_URL: https://${BASE_HOST_NAME:-$HOSTNAME}
+      CONTAINER_NAME: personaldrive-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
       - '172.17.0.1:60839:80'
     volumes:
@@ -33,8 +35,30 @@ services:
       start_period: 90s
     networks:
       - personaldrive
+      - proxy
+      - cloudflare
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://personaldrive-app:80'
+      - 'cloudflare.hostname=personaldrive.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.personaldrive-app.entrypoints=http'
+      - 'traefik.http.routers.personaldrive-app-secure.tls=true'
+      - 'traefik.http.routers.personaldrive-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.personaldrive-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.personaldrive-app.middlewares=personaldrive-app-https-redirect'
+      - 'traefik.http.routers.personaldrive-app-secure.entrypoints=https'
+      - 'traefik.http.routers.personaldrive-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.personaldrive-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.personaldrive-app-secure.service=personaldrive-app'
+      - 'traefik.http.services.personaldrive-app.loadbalancer.server.port=80'
 
 networks:
   personaldrive:
     name: personaldrive
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
